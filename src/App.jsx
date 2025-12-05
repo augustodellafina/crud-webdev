@@ -10,12 +10,30 @@ import './App.scss';
 
 export function App() {
   return (
+    /**
+     * UserProvider envolve tudo pra disponibilizar contexto de usuários.
+     * Qualquer componente filho pode usar useUserContext().
+     * 
+     * Router gerencia navegação - mantém URL sincronizada com componentes.
+     */
     <UserProvider>
       <Router>
         <div className="app-container">
+          {/* Header fixo no topo - aparece em todas as páginas */}
           <Header />
           <div className="app-body">
+            {/* Sidebar de navegação - também aparece em todas as páginas */}
             <Sidebar />
+            {/**
+             * Main content area com role="main" pra acessibilidade.
+             * Screen readers podem pular direto pro conteúdo principal.
+             * 
+             * Routes define qual componente renderizar baseado na URL:
+             * / -> HomePage
+             * /user -> UserPage (modo criação)
+             * /user/:id -> UserPage (modo edição, mesmo componente!)
+             * /users -> UsersListPage
+             */}
             <main id="main-content" className="main-content" role="main">
               <Routes>
                 <Route path="/" element={<HomePage />} />

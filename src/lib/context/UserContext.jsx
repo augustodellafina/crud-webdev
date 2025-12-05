@@ -3,7 +3,14 @@ import { UserService } from '../services/userService';
 
 const UserContext = createContext();
 
-// Initial state with sample data
+/**
+ * Estado inicial com dados de exemplo.
+ * 
+ * Coloquei 2 usuários mockados pra facilitar desenvolvimento e testes.
+ * Em produção, isso viria vazio e seria carregado do backend.
+ * 
+ * createdAt como ISO string pra facilitar ordenação e exibição.
+ */
 const initialState = {
   users: [
     {
@@ -42,12 +49,24 @@ export const USER_ACTIONS = {
   CLEAR_ERROR: 'CLEAR_ERROR'
 };
 
-// Reducer
+/**
+ * Reducer que gerencia todas as ações de usuário.
+ * 
+ * Reducer é uma função pura: (state, action) => newState.
+ * Nunca modifica o state diretamente - sempre retorna novo objeto.
+ * 
+ * Isso é crucial pro React detectar mudanças e re-renderizar.
+ * Se eu fizesse state.users.push(user), não funcionaria.
+ */
 const userReducer = (state, action) => {
   switch (action.type) {
     case USER_ACTIONS.SET_USERS:
       return { ...state, users: action.payload, loading: false };
       
+    /**
+     * Adiciona novo usuário ao array.
+     * Uso spread [...state.users, novo] ao invés de push().
+     */
     case USER_ACTIONS.ADD_USER:
       return { 
         ...state, 
@@ -56,6 +75,10 @@ const userReducer = (state, action) => {
         error: null
       };
       
+    /**
+     * Atualiza usuário existente.
+     * map() cria novo array, substituindo só o usuário com ID correspondente.
+     */
     case USER_ACTIONS.UPDATE_USER:
       return {
         ...state,
@@ -67,6 +90,10 @@ const userReducer = (state, action) => {
         error: null
       };
       
+    /**
+     * Remove usuário.
+     * filter() cria novo array sem o usuário com o ID especificado.
+     */
     case USER_ACTIONS.DELETE_USER:
       return {
         ...state,
@@ -92,11 +119,21 @@ const userReducer = (state, action) => {
   }
 };
 
-// Provider component
+/**
+ * Componente Provider que envolve a aplicação.
+ * 
+ * useReducer gerencia o estado com o reducer definido acima.
+ * Exporto tanto o state quanto as actions pra facilitar uso.
+ */
 export function UserProvider({ children }) {
   const [state, dispatch] = useReducer(userReducer, initialState);
 
-  // Load users from localStorage on mount
+  /**
+   * Carrega usuários do localStorage quando o componente monta.
+   * 
+   * useEffect com [] vazio roda só uma vez (componentDidMount).
+   * try/catch protege contra JSON inválido no localStorage.
+   */
   useEffect(() => {
     const savedUsers = localStorage.getItem('crud-users');
     if (savedUsers) {
@@ -109,22 +146,34 @@ export function UserProvider({ children }) {
     }
   }, []);
 
-  // Save users to localStorage when users change
+  /**
+   * Salva usuários no localStorage sempre que o array mudar.
+   * 
+   * useEffect com [state.users] roda toda vez que users muda.
+   * Isso mantém localStorage sincronizado com o estado.
+   */
   useEffect(() => {
     if (state.users.length > 0) {
       localStorage.setItem('crud-users', JSON.stringify(state.users));
     }
   }, [state.users]);
 
-  // Actions
+  /**
+   * Ações que os componentes podem chamar.
+   * 
+   * Cada ação valida os dados com UserService antes de despachar.
+   * Se validação falhar, lança erro que pode ser capturado com try/catch.
+   */
   const actions = {
     addUser: (userData) => {
+      // Valida dados antes de adicionar
       const validation = UserService.validateUser(userData);
       if (!validation.isValid) {
         dispatch({ type: USER_ACTIONS.SET_ERROR, payload: validation.errors });
         throw new Error('Validation failed');
       }
       
+      // Cria usuário com ID e timestamp
       const newUser = {
         ...userData,
         id: UserService.generateId(),
@@ -174,7 +223,15 @@ export function UserProvider({ children }) {
   );
 }
 
-// Custom hook to use the context
+/**
+ * Hook customizado pra acessar o contexto de usuários.
+ * 
+ * Verifica se tá sendo usado dentro do Provider.
+ * Se não tiver, lança erro claro ao invés de dar undefined.
+ * 
+ * Isso ajuda a debugar - se esquecer de envolver com Provider,
+ * o erro diz exatamente o que fazer.
+ */
 export const useUserContext = () => {
   const context = useContext(UserContext);
   if (!context) {

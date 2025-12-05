@@ -1,7 +1,24 @@
+/**
+ * Service layer pra lógica de negócio relacionada a usuários.
+ * 
+ * Criei isso como classe com métodos estáticos pra:
+ * - Separar lógica de validação dos componentes (Separation of Concerns)
+ * - Facilitar testes unitários (posso testar validação independente da UI)
+ * - Reutilizar em múltiplos lugares sem duplicar código
+ * 
+ * Métodos estáticos porque não preciso de instância - são funções puras.
+ */
 export class UserService {
+  /**
+   * Valida todos os campos de um usuário.
+   * 
+   * Retorna objeto com isValid (boolean) e errors (objeto com mensagens).
+   * Preferi retornar objeto ao invés de lançar erro pra ter mais controle.
+   */
   static validateUser(userData) {
     const errors = {};
     
+    // trim() remove espaços nas pontas - "  " não é nome válido
     if (!userData.name?.trim()) {
       errors.name = 'Nome é obrigatório';
     }
@@ -28,17 +45,36 @@ export class UserService {
     };
   }
   
+  /**
+   * Valida formato de email com regex.
+   * 
+   * Regex simples mas eficaz: [algo]@[algo].[algo]
+   * Não é perfeita (email real pode ser mais complexo),
+   * mas suficiente pra 99% dos casos.
+   */
   static isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
   
+  /**
+   * Valida telefone português.
+   * 
+   * Aceita +351 opcional e 9 dígitos.
+   * replace(/\s/g, '') remove espaços pra validar só os números.
+   */
   static isValidPhone(phone) {
     // Portuguese phone format validation
     const phoneRegex = /^(\+351)?[0-9]{9}$/;
     return phoneRegex.test(phone.replace(/\s/g, ''));
   }
   
+  /**
+   * Formata usuário pra exibição.
+   * 
+   * Adiciona campos computados sem modificar o original.
+   * join(', ') transforma array ['Dev', 'Designer'] em string "Dev, Designer".
+   */
   static formatUserForDisplay(user) {
     return {
       ...user,
@@ -47,6 +83,13 @@ export class UserService {
     };
   }
   
+  /**
+   * Formata telefone pra exibição bonita.
+   * 
+   * +351 xxx xxx xxx ao invés de +351xxxxxxxxx.
+   * replace(/\D/g, '') remove tudo que não é dígito.
+   * slice() pega pedaços da string pra formatar.
+   */
   static formatPhone(phone) {
     // Format: +351 xxx xxx xxx
     const cleaned = phone.replace(/\D/g, '');
@@ -57,6 +100,15 @@ export class UserService {
     return phone;
   }
   
+  /**
+   * Gera ID único.
+   * 
+   * Uso timestamp + random pra garantir unicidade.
+   * toString(36) converte pra base36 (letras + números) = mais compacto.
+   * substring(2, 7) pega 5 caracteres do random.
+   * 
+   * Exemplo de ID gerado: "l8xk2y3abc"
+   */
   static generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
   }

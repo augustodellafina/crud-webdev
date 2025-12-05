@@ -1,3 +1,11 @@
+/**
+ * Mensagens de notificação centralizadas.
+ * 
+ * Manter mensagens aqui ao invés de hardcoded no código facilita:
+ * - Mudanças de texto (só atualiza aqui)
+ * - Tradução/internacionalização futura
+ * - Consistência nas mensagens
+ */
 export const NOTIFICATION_MESSAGES = {
   USER_CREATED: 'Utilizador criado com sucesso!',
   USER_UPDATED: 'Utilizador atualizado com sucesso!',
@@ -7,6 +15,12 @@ export const NOTIFICATION_MESSAGES = {
   CONFIRM_DELETE: 'Tem a certeza que deseja eliminar este utilizador?'
 };
 
+/**
+ * Tipos de notificação disponíveis.
+ * 
+ * Cada tipo tem estilo visual diferente no componente NotificationContainer.
+ * Uso constantes ao invés de strings pra evitar typos.
+ */
 export const NOTIFICATION_TYPES = {
   SUCCESS: 'success',
   ERROR: 'error',
